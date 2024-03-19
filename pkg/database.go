@@ -39,19 +39,10 @@ func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
 	}
 
 	var databases []notion.Database
-	// fmt.Println(resp.Results)
 	for _, result := range resp.Results {
 		if database, ok := result.(notion.Database); ok {
-			if database.Title != nil && len(database.Title) > 0 {
-				for _, result := range resp.Results {
-					if database, ok := result.(notion.Database); ok {
-						if database.Title != nil && len(database.Title) > 0 {
-							if database.Title[0].PlainText != "" {
-								databases = append(databases, database)
-							}
-						}
-					}
-				}
+			if database.Title != nil && len(database.Title) > 0 && database.Title[0].PlainText != "" {
+				databases = append(databases, database)
 			}
 		}
 	}
