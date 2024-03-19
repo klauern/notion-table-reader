@@ -25,8 +25,9 @@ func (c *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, 
 	return nil, fmt.Errorf("Unable to find column %s", columnName)
 }
 
-func (c *Client) ListDatabases() ([]notion.Database, error) {
+func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
 	resp, err := c.client.Search(c.context, &notion.SearchOpts{
+		Query: query,
 		Filter: &notion.SearchFilter{
 			Value:    "database",
 			Property: "object",
@@ -48,5 +49,6 @@ func (c *Client) ListDatabases() ([]notion.Database, error) {
 			}
 		}
 	}
+
 	return databases, nil
 }
