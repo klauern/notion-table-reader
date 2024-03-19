@@ -74,8 +74,8 @@ func NewOpenAIClient(ctx context.Context) LLMClient {
 	}
 }
 
-func (l LLMClient) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]string, error) {
-	resp, err := l.openAI.CreateChatCompletion(l.context, openai.ChatCompletionRequest{
+func (l Client) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]string, error) {
+	resp, err := l.llmClient.CreateChatCompletion(l.context, openai.ChatCompletionRequest{
 		Model: openai.GPT4TurboPreview,
 		Messages: []openai.ChatCompletionMessage{
 			{

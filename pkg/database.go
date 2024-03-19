@@ -68,3 +68,20 @@ func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 
 	return nil, errors.New("No columns found")
 }
+
+func (c *Client) ListPages(notTagged bool) ([]notion.Page, error) {
+	results, err := c.client.QueryDatabase(c.context, DatabaseID, &notion.DatabaseQuery{
+		Filter: &notion.DatabaseQueryFilter{
+			Property: "Tags",
+			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
+				MultiSelect: &notion.MultiSelectDatabaseQueryFilter{
+					IsEmpty: true,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error querying database: %w", err)
+	}
+	return results.Results, nil
+}
