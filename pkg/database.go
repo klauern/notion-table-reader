@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dstotijn/go-notion"
@@ -51,4 +52,23 @@ func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
 	}
 
 	return databases, nil
+}
+
+func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]string, error) {
+	database, err := c.client.FindDatabaseByID(c.context, DatabaseID)
+	if err != nil {
+		return nil, fmt.Errorf("Error finding database: %w", err)
+	}
+
+	var columns []string
+	for _, prop := range database.Properties {
+		if prop.Type == notion.DBPropTypeMultiSelect {
+			for _, opt := range prop.MultiSelect.Options {
+				columns = append(columns, opt.Name)
+			}
+			return columns, nil
+		}
+	}
+
+	return nil, errors.New("No columns found")
 }
