@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 
@@ -8,6 +9,11 @@ import (
 )
 
 const DatabaseID = "2ce556682898478d8e9d175badac759e"
+
+type PageWithBlocks struct {
+	Page   *notion.Page
+	Blocks []*notion.ParagraphBlock
+}
 
 func (c *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, error) {
 	database, err := c.client.FindDatabaseByID(c.context, databaseId)
@@ -84,4 +90,40 @@ func (c *Client) ListPages(notTagged bool) ([]notion.Page, error) {
 		return nil, fmt.Errorf("Error querying database: %w", err)
 	}
 	return results.Results, nil
+}
+
+func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
+	page, err := c.client.FindPageByID(c.context, pageId)
+	if err != nil {
+		return nil, fmt.Errorf("Error finding page: %w", err)
+	}
+	blocks, err := c.client.FindBlockChildrenByID(c.context, page.ID, &notion.PaginationQuery{})
+	if err != nil {
+		return nil, fmt.Errorf("Error finding blocks: %w", err)
+	}
+
+	pageBlocks := PageWithBlocks{}
+	pageBlocks.Page = &page
+	for _, block := range blocks.Results {
+		// If block is of BlockType Paragraph, parse it and store
+		switch block := block.(type) {
+		case *notion.ParagraphBlock:
+			pageBlocks.Blocks = append(pageBlocks.Blocks, block)
+		default:
+			fmt.Printf("Unsupported block type: %T\n", block)
+		}
+	}
+
+	return &pageBlocks, nil
+}
+
+func (p PageWithBlocks) NormalizeBody() string {
+	var buf bytes.Buffer
+	for _, block := range p.Blocks {
+		for _, text := range block.RichText {
+			buf.WriteString(text.PlainText)
+		}
+		buf.WriteString("\n")
+	}
+	return buf.String()
 }
