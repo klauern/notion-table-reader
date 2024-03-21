@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"text/template"
 
@@ -67,25 +66,23 @@ func GenerateTagInputMessage(input *TagInput, tokenLimit int) string {
 }
 
 func (l Client) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]string, error) {
-	resp, err := l.llmClient.CreateChatCompletion(l.context, openai.ChatCompletionRequest{
-		Model: "gpt-3.5-turbo-16k-0613",
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    "system",
-				Content: GenerateSystemPrompt(tagOptions),
-			},
-			{
-				Role:    "user",
-				Content: GenerateTagInputMessage(messageContent, 10_000),
-			},
+	messages := []openai.ChatCompletionMessage{
+		{
+			Role:    "system",
+			Content: GenerateSystemPrompt(tagOptions),
 		},
-		MaxTokens: 10_000,
-	})
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, fmt.Errorf("error creating chat completion request: %w", err)
+		{
+			Role:    "user",
+			Content: GenerateTagInputMessage(messageContent, 10_000),
+		},
 	}
-	return splitResponse(resp.Choices[0].Message.Content), nil
+
+	response, err := l.RequestChatCompletion(messages, 10_000)
+	if err != nil {
+		return nil, err
+	}
+
+	return splitResponse(response), nil
 }
 
 func splitResponse(response string) []string {
