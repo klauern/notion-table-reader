@@ -15,29 +15,39 @@ type Client struct {
 	client    *notion.Client
 	context   context.Context
 	llmClient *openai.Client
+	Model     string
+	MaxTokens int
+}
+
+var tokenMax map[string]int = map[string]int{
+	openai.GPT4TurboPreview: 4096,
 }
 
 func NewClient() *Client {
 	config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
 	config.OrgID = MyOrgID
 	client := openai.NewClientWithConfig(config)
+	model := openai.GPT4TurboPreview
+	maxToken := tokenMax[model]
 	return &Client{
 		client:    notion.NewClient(os.Getenv("NOTION_API_KEY")),
 		context:   context.Background(),
 		llmClient: client,
+		Model:     model,
+		MaxTokens: maxToken,
 	}
 }
 
-func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage, maxTokens int) (string, error) {
+func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage) (string, error) {
 	var resp openai.ChatCompletionResponse
 	var err error
 
 	retries := 3
 	for i := 0; i < retries; i++ {
 		resp, err = l.llmClient.CreateChatCompletion(l.context, openai.ChatCompletionRequest{
-			Model:     "gpt-3.5-turbo-16k-0613",
+			Model:     l.Model,
 			Messages:  messages,
-			MaxTokens: maxTokens,
+			MaxTokens: l.MaxTokens,
 		})
 		if err == nil {
 			break

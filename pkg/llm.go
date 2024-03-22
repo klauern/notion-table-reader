@@ -73,11 +73,11 @@ func (l Client) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]s
 		},
 		{
 			Role:    "user",
-			Content: GenerateTagInputMessage(messageContent, 10_000),
+			Content: GenerateTagInputMessage(messageContent, l.MaxTokens),
 		},
 	}
 
-	response, err := l.RequestChatCompletion(messages, 10_000)
+	response, err := l.RequestChatCompletion(messages)
 	if err != nil {
 		return nil, err
 	}
