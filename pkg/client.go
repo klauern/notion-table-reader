@@ -39,10 +39,10 @@ func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage, m
 			Messages:  messages,
 			MaxTokens: maxTokens,
 		})
-
 		if err == nil {
 			break
 		}
+		Log.Error("Getting chat completion", "resp", err)
 
 		fmt.Printf("Error creating chat completion request (attempt %d): %v\n", i+1, err)
 		if i < retries-1 {
@@ -54,5 +54,6 @@ func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage, m
 		return "", fmt.Errorf("error creating chat completion request after %d attempts: %w", retries, err)
 	}
 
+	Log.Debug("number of responses", "count", len(resp.Choices))
 	return resp.Choices[0].Message.Content, nil
 }

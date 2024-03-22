@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/dstotijn/go-notion"
 )
@@ -128,6 +129,7 @@ func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error finding page: %w", err)
 	}
+	Log.Debug("page", "id", page.ID, "parent_id", page.Parent.PageID)
 	blocks, err := c.client.FindBlockChildrenByID(c.context, page.ID, &notion.PaginationQuery{})
 	if err != nil {
 		return nil, fmt.Errorf("Error finding blocks: %w", err)
@@ -154,6 +156,7 @@ func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
 		case *notion.CalloutBlock:
 			validBlock = *block
 		default:
+			Log.Debug("unrecognized", "type", reflect.TypeOf(block))
 			continue
 		}
 		pageBlocks.Blocks = append(pageBlocks.Blocks, validBlock.(notion.Block))
