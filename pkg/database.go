@@ -12,7 +12,38 @@ const DatabaseID = "2ce556682898478d8e9d175badac759e"
 
 type PageWithBlocks struct {
 	Page   *notion.Page
-	Blocks []*notion.ParagraphBlock
+	Blocks []notion.Block
+}
+
+func extractRichText(richText []notion.RichText) string {
+	var buf bytes.Buffer
+	for _, t := range richText {
+		buf.WriteString(t.PlainText)
+	}
+	return buf.String()
+}
+
+func blockToMarkdown(block notion.Block) string {
+	switch b := block.(type) {
+	case *notion.ParagraphBlock:
+		return extractRichText(b.RichText)
+	case *notion.Heading1Block:
+		return extractRichText(b.RichText)
+	case *notion.Heading2Block:
+		return extractRichText(b.RichText)
+	case *notion.Heading3Block:
+		return extractRichText(b.RichText)
+	case *notion.BulletedListItemBlock:
+		return extractRichText(b.RichText)
+	case *notion.NumberedListItemBlock:
+		return extractRichText(b.RichText)
+	case *notion.ToDoBlock:
+		return extractRichText(b.RichText)
+	case *notion.CalloutBlock:
+		return extractRichText(b.RichText)
+	default:
+		return ""
+	}
 }
 
 func (c *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, error) {
@@ -105,13 +136,27 @@ func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
 	pageBlocks := PageWithBlocks{}
 	pageBlocks.Page = &page
 	for _, block := range blocks.Results {
-		// If block is of BlockType Paragraph, parse it and store
+		// If block is of BlockType Paragraph, NumberedListItem, Heading1, Heading2, or BulletedListItem, parse it and store
+		var validBlock interface{}
 		switch block := block.(type) {
 		case *notion.ParagraphBlock:
-			pageBlocks.Blocks = append(pageBlocks.Blocks, block)
+			validBlock = *block
+		case *notion.NumberedListItemBlock:
+			validBlock = *block
+		case *notion.BulletedListItemBlock:
+			validBlock = *block
+		case *notion.Heading1Block:
+			validBlock = *block
+		case *notion.Heading2Block:
+			validBlock = *block
+		case *notion.Heading3Block:
+			validBlock = *block
+		case *notion.CalloutBlock:
+			validBlock = *block
 		default:
-			fmt.Printf("Unsupported block type: %T\n", block)
+			continue
 		}
+		pageBlocks.Blocks = append(pageBlocks.Blocks, validBlock.(notion.Block))
 	}
 
 	return &pageBlocks, nil
@@ -120,10 +165,7 @@ func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
 func (p PageWithBlocks) NormalizeBody() string {
 	var buf bytes.Buffer
 	for _, block := range p.Blocks {
-		for _, text := range block.RichText {
-			buf.WriteString(text.PlainText)
-		}
-		buf.WriteString("\n")
+		buf.WriteString(blockToMarkdown(block))
 	}
 	return buf.String()
 }
