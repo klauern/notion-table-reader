@@ -149,6 +149,9 @@ func TagPages(context *cli.Context) error {
 			errs = append(errs, fmt.Errorf("failed to identify tags for page %s: %w", id, err))
 		}
 		fmt.Printf("Tagging page %s with tags: %s\n", id, strings.Join(tagList, ", "))
+		if err := client.TagDatabasePage(id, tagList); err != nil {
+			errs = append(errs, fmt.Errorf("failed to tag page %s: %w", id, err))
+		}
 	}
 	if len(errs) != 0 {
 		// return all the errors wrapped in an error:

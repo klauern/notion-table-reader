@@ -172,3 +172,27 @@ func (p PageWithBlocks) NormalizeBody() string {
 	}
 	return buf.String()
 }
+
+func tagsToNotionProps(tags []string) []notion.SelectOptions {
+	var notionTags []notion.SelectOptions
+	for _, tag := range tags {
+		notionTags = append(notionTags, notion.SelectOptions{
+			Name: tag,
+		})
+	}
+	return notionTags
+}
+
+func (c *Client) TagDatabasePage(pageId string, tags []string) error {
+	_, err := c.client.UpdatePage(c.context, pageId, notion.UpdatePageParams{
+		DatabasePageProperties: notion.DatabasePageProperties{
+			"Tags": notion.DatabasePageProperty{
+				MultiSelect: tagsToNotionProps(tags),
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update page %s with tags: %w", pageId, err)
+	}
+	return nil
+}

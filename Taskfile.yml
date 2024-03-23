@@ -1,0 +1,9 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  tag:
+    desc: run the tagging program on my database and tag all the things
+    cmds:
+      - go run cmd/main.go p query | awk -F'[(|)]' '{print $2}' | xargs -I {} go run cmd/main.go p tag --page_id {}
