@@ -15,6 +15,9 @@ const DatabaseID = "2ce556682898478d8e9d175badac759e"
 var (
 	client        *pkg.Client
 	availableTags []string
+	version       = "dev"
+	commit        = "none"
+	date          = "unknown"
 )
 
 func init() {
@@ -74,6 +77,15 @@ func main() {
 						Action: TagPages,
 					},
 				},
+			},
+			{
+				Name:    "version",
+				Aliases: []string{"v"},
+				Action: func(ctx *cli.Context) error {
+					fmt.Printf("notion-tagger v%s, commit %s, built at %s\n", version, commit, date)
+					return nil
+				},
+				Description: "print the version of the binary",
 			},
 		},
 	}
