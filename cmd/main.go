@@ -21,7 +21,7 @@ var (
 )
 
 func init() {
-	client = pkg.NewClient()
+	client = pkg.NewClient("", "")
 	tags, err := client.ListTagsForDatabaseColumn(DatabaseID, "Tags")
 	if err != nil {
 		panic(err)

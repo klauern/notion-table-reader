@@ -23,14 +23,20 @@ var tokenMax map[string]int = map[string]int{
 	openai.GPT4TurboPreview: 4096,
 }
 
-func NewClient() *Client {
-	config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
+func NewClient(openai_key string, notion_api_key string) *Client {
+	if openai_key == "" {
+		openai_key = os.Getenv("OPENAI_API_KEY")
+	}
+	if notion_api_key == "" {
+		notion_api_key = os.Getenv("NOTION_API_KEY")
+	}
+	config := openai.DefaultConfig(openai_key)
 	config.OrgID = MyOrgID
 	client := openai.NewClientWithConfig(config)
 	model := openai.GPT4TurboPreview
 	maxToken := tokenMax[model]
 	return &Client{
-		client:    notion.NewClient(os.Getenv("NOTION_API_KEY")),
+		client:    notion.NewClient(notion_api_key),
 		context:   context.Background(),
 		llmClient: client,
 		Model:     model,
