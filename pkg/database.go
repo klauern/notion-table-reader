@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/dstotijn/go-notion"
 )
 
-const DatabaseID = "2ce556682898478d8e9d175badac759e"
+var DatabaseID = os.Getenv("NOTION_INBOX_DATABASE_ID")
 
 type PageWithBlocks struct {
 	Page   *notion.Page
