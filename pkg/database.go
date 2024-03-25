@@ -4,13 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 
 	"github.com/dstotijn/go-notion"
 )
-
-var DatabaseID = os.Getenv("NOTION_INBOX_DATABASE_ID")
 
 type PageWithBlocks struct {
 	Page   *notion.Page
@@ -90,7 +87,7 @@ func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
 }
 
 func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]string, error) {
-	database, err := c.client.FindDatabaseByID(c.context, DatabaseID)
+	database, err := c.client.FindDatabaseByID(c.context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding database: %w", err)
 	}
@@ -108,8 +105,8 @@ func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 	return nil, errors.New("No columns found")
 }
 
-func (c *Client) ListPages(notTagged bool) ([]notion.Page, error) {
-	results, err := c.client.QueryDatabase(c.context, DatabaseID, &notion.DatabaseQuery{
+func (c *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, error) {
+	results, err := c.client.QueryDatabase(c.context, databaseId, &notion.DatabaseQuery{
 		Filter: &notion.DatabaseQueryFilter{
 			Property: "Tags",
 			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{

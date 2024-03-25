@@ -9,8 +9,6 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-const MyOrgID = "org-f6O3xgu6hFn7sGzM2dwRPt0v"
-
 type Client struct {
 	client    *notion.Client
 	context   context.Context
@@ -31,7 +29,6 @@ func NewClient(openai_key string, notion_api_key string) *Client {
 		notion_api_key = os.Getenv("NOTION_API_KEY")
 	}
 	config := openai.DefaultConfig(openai_key)
-	config.OrgID = MyOrgID
 	client := openai.NewClientWithConfig(config)
 	model := openai.GPT4TurboPreview
 	maxToken := tokenMax[model]

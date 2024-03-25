@@ -129,7 +129,7 @@ func QueryDatabase(context *cli.Context) error {
 }
 
 func QueryPages(context *cli.Context) error {
-	pages, err := client.ListPages(context.Bool("untagged"))
+	pages, err := client.ListPages(DatabaseID, context.Bool("untagged"))
 	if err != nil {
 		return fmt.Errorf("failed to query pages: %w", err)
 	}
