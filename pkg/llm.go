@@ -2,9 +2,11 @@ package pkg
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"text/template"
 
+	"github.com/dstotijn/go-notion"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -87,4 +89,33 @@ func (l Client) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]s
 
 func splitResponse(response string) []string {
 	return strings.Split(response, "\n")
+}
+
+func (client Client) NewTagInput(pageID string) (*TagInput, error) {
+	page, err := client.GetPage(pageID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get page %s: %w", pageID, err)
+	}
+	tag := &TagInput{
+		Title: page.Page.Properties.(notion.DatabasePageProperties)["Name"].Title[0].PlainText,
+		URL:   page.Page.URL,
+		Raw:   page.NormalizeBody(),
+	}
+	return tag, nil
+}
+
+func (client Client) TagPage(id string, availableTags []string) error {
+	tag, err := client.NewTagInput(id)
+	if err != nil {
+		return fmt.Errorf("failed to retrive Notion Page: %w", err)
+	}
+	tagList, err := client.IdentifyTags(tag, availableTags)
+	if err != nil {
+		return fmt.Errorf("failed to identify tags for page %s: %w", id, err)
+	}
+	fmt.Printf("Tagging page %s with tags: %s\n", id, strings.Join(tagList, ", "))
+	if err := client.TagDatabasePage(id, tagList); err != nil {
+		return fmt.Errorf("failed to tag page %s: %w", id, err)
+	}
+	return nil
 }

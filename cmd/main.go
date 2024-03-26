@@ -145,23 +145,10 @@ func QueryPages(context *cli.Context) error {
 
 func TagPages(context *cli.Context) error {
 	errs := make([]error, 0)
-	// for each 'page_id' in the stringslice in context, pull the page from Notion
 
 	for _, id := range context.StringSlice("page_id") {
-		page, err := client.GetPage(id)
+		err := client.TagPage(id, availableTags)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to get page %s: %w", id, err))
-		}
-		tagList, err := client.IdentifyTags(&pkg.TagInput{
-			Title: page.Page.Properties.(notion.DatabasePageProperties)["Name"].Title[0].PlainText,
-			URL:   page.Page.URL,
-			Raw:   page.NormalizeBody(),
-		}, availableTags)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("failed to identify tags for page %s: %w", id, err))
-		}
-		fmt.Printf("Tagging page %s with tags: %s\n", id, strings.Join(tagList, ", "))
-		if err := client.TagDatabasePage(id, tagList); err != nil {
 			errs = append(errs, fmt.Errorf("failed to tag page %s: %w", id, err))
 		}
 	}
