@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/dstotijn/go-notion"
 	"github.com/klauern/notion-table-reader/pkg"
