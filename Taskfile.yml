@@ -2,8 +2,53 @@
 
 version: '3'
 
+
+vars:
+  DEFAULT_BRANCH: main # Replace with your default branch if different
+
 tasks:
   tag:
     desc: run the tagging program on my database and tag all the things
     cmds:
       - go run cmd/main.go p query | awk -F'[(|)]' '{print $2}' | xargs -I {} go run cmd/main.go p tag --page_id {}
+
+  get-latest-tag:
+    cmds:
+      - git fetch --tags
+      - git describe --tags `git rev-list --tags --max-count=1`
+    silent: true
+
+  get-current-version:
+    cmds:
+      - echo "{{.VERSION}}"
+    silent: true
+
+  bump:patch:
+    desc: "Create a patch version bump"
+    cmds:
+      - |
+        CURRENT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS = FS} {sub(/^v/,"",$0); $3+=1; print "v"$0}')
+        echo "Next patch version: $NEXT_TAG"
+        git tag $NEXT_TAG
+        git push origin $NEXT_TAG
+
+  bump:minor:
+    desc: "Create a minor version bump"
+    cmds:
+      - |
+        CURRENT_TAG=$(task: get-latest-tag)
+        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS=FS} {sub(/^v/,"",$0); $3=0; $2+=1; print "v"$0}')
+        echo "Next minor version: $NEXT_TAG"
+        git tag $NEXT_TAG
+        git push origin $NEXT_TAG
+
+  bump:major:
+    desc: "Create a major version bump"
+    cmds:
+      - |
+        CURRENT_TAG=$(task: get-latest-tag)
+        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS=FS} {sub(/^v/,"",$0); $3=0; $2=0; $1+=1; print "v"$0}')
+        echo "Next major version: $NEXT_TAG"
+        git tag $NEXT_TAG
+        git push origin $NEXT_TAG
