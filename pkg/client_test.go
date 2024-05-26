@@ -88,7 +88,46 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+func (m *MockClient) ListTagsForDatabaseColumn(dbId, colName string) ([]string, error) {
+	return m.ListTagsForDatabaseColumn(dbId, colName)
+}
+
 func TestListTagsForDatabaseColumn(t *testing.T) {
+	mockClient := &MockClient{
+		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
+			return notion.Database{
+				Properties: map[string]notion.DatabaseProperty{
+					"Tags": {
+						Type: notion.DBPropTypeMultiSelect,
+						MultiSelect: &notion.SelectMetadata{
+							Options: []notion.SelectOptions{
+								{Name: "tag1"},
+								{Name: "tag2"},
+							},
+						},
+					},
+				},
+			}, nil
+		},
+		ListTagsForDatabaseColumn: func(dbId, colName string) ([]string, error) {
+			return []string{"tag1", "tag2"}, nil
+		},
+	}
+
+	client := Client{
+		notionClient: mockClient,
+		context:      context.Background(),
+	}
+
+	tags, err := client.ListTagsForDatabaseColumn("databaseId", "Tags")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	expectedTags := []string{"tag1", "tag2"}
+	if !reflect.DeepEqual(tags, expectedTags) {
+		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
+	}
 	mockClient := &MockClient{
 		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
 			return notion.Database{
