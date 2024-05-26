@@ -2,6 +2,7 @@ package pkg_test
 
 import (
 	"context"
+	. "github.com/onsi/gomega"
 	"reflect"
 	"testing"
 
@@ -56,11 +57,10 @@ func TestExtractRichText(t *testing.T) {
 	result := pageWithBlocks.NormalizeBody()
 
 	Expect(result).To(Equal(expected))
+	Expect(result).To(Equal(expected))
 	expected = "HelloWorld"
 	result = myNotion.ExtractRichText(richText)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 }
 
 func TestListMultiSelectProps(t *testing.T) {
