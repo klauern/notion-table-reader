@@ -8,10 +8,11 @@ import (
 
 	"github.com/klauern/notion-table-reader/pkg/llm"
 	"github.com/sashabaranov/go-openai"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/gomega"
 )
 
 func TestGenerateSystemPrompt(t *testing.T) {
+	RegisterTestingT(t)
 	tags := []string{"tag1", "tag2", "tag3"}
 	expected := `
 		You are a command-line app that responds with only a list of tags that categorize the content of the messages being sent to you.
@@ -22,7 +23,7 @@ func TestGenerateSystemPrompt(t *testing.T) {
 		- tag3
 	`
 	result := llm.GenerateSystemPrompt(tags)
-	assert.Equal(t, expected, result)
+	Expect(result).To(Equal(expected))
 }
 
 func TestGenerateTagInputMessage(t *testing.T) {
@@ -38,7 +39,7 @@ func TestGenerateTagInputMessage(t *testing.T) {
 		Content Raw: Test content
 	`
 	result := llm.GenerateTagInputMessage(input, 1000)
-	assert.Equal(t, expected, result)
+	Expect(result).To(Equal(expected))
 }
 
 func TestGenerateTagInputMessage_Truncate(t *testing.T) {
@@ -54,14 +55,14 @@ func TestGenerateTagInputMessage_Truncate(t *testing.T) {
 		Content Raw: Test content
 	`
 	result := llm.GenerateTagInputMessage(input, 10)
-	assert.Equal(t, expected[:10], result)
+	Expect(result).To(Equal(expected[:10]))
 }
 
 func TestSplitResponse(t *testing.T) {
 	response := "line1\nline2\nline3"
 	expected := []string{"line1", "line2", "line3"}
 	result := llm.SplitResponse(response)
-	assert.Equal(t, expected, result)
+	Expect(result).To(Equal(expected))
 }
 
 type mockOpenAIClient struct{}
@@ -86,6 +87,6 @@ func TestRequestChatCompletion(t *testing.T) {
 	}
 	expected := "response"
 	result, err := client.RequestChatCompletion(messages)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, result)
+	Expect(err).To(BeNil())
+	Expect(result).To(Equal(expected))
 }
