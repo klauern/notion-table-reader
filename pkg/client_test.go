@@ -115,7 +115,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 	}
 
 	client := &Client{
-		notionClient: mockClient,
+		notionClient: &notion.Client{}, // Use an empty notion.Client for testing
 		context:      context.Background(),
 	}
 
