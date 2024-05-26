@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"reflect"
 
 	"github.com/dstotijn/go-notion"
 	readNotion "github.com/klauern/notion-table-reader/pkg/notion"
