@@ -3,7 +3,6 @@ package pkg_test
 import (
 	"context"
 	. "github.com/onsi/gomega"
-	"reflect"
 	"testing"
 
 	"github.com/dstotijn/go-notion"

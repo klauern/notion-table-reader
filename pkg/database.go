@@ -77,7 +77,7 @@ func (l *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 	var columns []string
 	for _, prop := range database.Properties {
 		if prop.Type == notion.DBPropTypeMultiSelect {
-			for _, opt := range prop.Select.Options {
+			for _, opt := range prop.MultiSelect.Options {
 				columns = append(columns, opt.Name)
 			}
 			return columns, nil

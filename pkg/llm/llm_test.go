@@ -1,14 +1,13 @@
 package llm_test
 
 import (
-	"bytes"
 	"context"
 	"testing"
-	"text/template"
 
 	"github.com/klauern/notion-table-reader/pkg/llm"
-	"github.com/sashabaranov/go-openai"
+	"github.com/klauern/notion-table-reader/pkg/mocks"
 	. "github.com/onsi/gomega"
+	"github.com/sashabaranov/go-openai"
 )
 
 func TestGenerateSystemPrompt(t *testing.T) {
@@ -76,11 +75,9 @@ func (m *mockOpenAIClient) CreateChatCompletion(ctx context.Context, req openai.
 }
 
 func TestRequestChatCompletion(t *testing.T) {
-	client := &llm.Client{
-		LLMClient: &mockOpenAIClient{},
-		Context:   context.Background(),
-		Model:     "test-model",
-	}
+	ctrl := mocks.NewMockController(t)
+	client := mocks.NewMockLLMClient(ctrl)
+	client.EXPECT().
 
 	messages := []openai.ChatCompletionMessage{
 		{Role: "user", Content: "test message"},
