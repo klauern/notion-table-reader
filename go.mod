@@ -5,6 +5,7 @@ go 1.22.3
 require (
 	github.com/dstotijn/go-notion v0.11.0
 	github.com/sashabaranov/go-openai v1.24.1
+	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.27.2
 	go.uber.org/mock v0.4.0
 )
