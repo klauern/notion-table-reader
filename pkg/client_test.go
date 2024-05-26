@@ -114,7 +114,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		},
 	}
 
-	mockClient := &MockClient{
+	mockClient = &MockClient{
 		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
 			return notion.Database{
 				Properties: map[string]notion.DatabaseProperty{
@@ -135,11 +135,6 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		},
 	}
 
-	client := &Client{
-		notionClient: &notion.Client{}, // Use an empty notion.Client for testing
-		context:      context.Background(),
-	}
-
 	tags, err := mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -149,5 +144,4 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 	if !reflect.DeepEqual(tags, expectedTags) {
 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
 	}
-
 }
