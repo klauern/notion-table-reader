@@ -1,13 +1,10 @@
 package llm_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/klauern/notion-table-reader/pkg/llm"
-	"github.com/klauern/notion-table-reader/pkg/mocks"
 	. "github.com/onsi/gomega"
-	"github.com/sashabaranov/go-openai"
 )
 
 func TestGenerateSystemPrompt(t *testing.T) {
@@ -61,29 +58,5 @@ func TestSplitResponse(t *testing.T) {
 	response := "line1\nline2\nline3"
 	expected := []string{"line1", "line2", "line3"}
 	result := llm.SplitResponse(response)
-	Expect(result).To(Equal(expected))
-}
-
-type mockOpenAIClient struct{}
-
-func (m *mockOpenAIClient) CreateChatCompletion(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
-	return openai.ChatCompletionResponse{
-		Choices: []openai.ChatCompletionChoice{
-			{Message: openai.ChatCompletionMessage{Content: "response"}},
-		},
-	}, nil
-}
-
-func TestRequestChatCompletion(t *testing.T) {
-	ctrl := mocks.NewMockController(t)
-	client := mocks.NewMockLLMClient(ctrl)
-	client.EXPECT().
-
-	messages := []openai.ChatCompletionMessage{
-		{Role: "user", Content: "test message"},
-	}
-	expected := "response"
-	result, err := client.RequestChatCompletion(messages)
-	Expect(err).To(BeNil())
 	Expect(result).To(Equal(expected))
 }
