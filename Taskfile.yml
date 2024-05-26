@@ -10,7 +10,14 @@ tasks:
   test:
     desc: run tests for the project
     cmds:
-      - go test ./...
+      - go test -coverprofile=coverage.out ./...
+
+  coverage:
+    desc: generate coverage report
+    deps: [test]
+    cmds:
+      - go tool cover -html=coverage.out
+
   tag:
     desc: run the tagging program on my database and tag all the things
     cmds:
