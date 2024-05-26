@@ -3,3 +3,7 @@ go.work
 .idea
 dist/
 .aider*
+
+coverage.out
+
+.fleet
