@@ -12,6 +12,12 @@ import (
 type NotionClient interface {
 	FetchPages(databaseID string, untagged bool) ([]PageDetail, error)
 	TagPage(id string, availableTags []string) error
+	FindDatabaseByID(ctx context.Context, databaseId string) (notion.Database, error)
+	Search(ctx context.Context, opts *notion.SearchOpts) (*notion.SearchResponse, error)
+	QueryDatabase(ctx context.Context, databaseId string, query *notion.DatabaseQuery) (*notion.DatabaseQueryResponse, error)
+	FindPageByID(ctx context.Context, pageId string) (notion.Page, error)
+	FindBlockChildrenByID(ctx context.Context, blockId string, pagination *notion.PaginationQuery) (*notion.BlockChildrenResponse, error)
+	UpdatePage(ctx context.Context, pageId string, params notion.UpdatePageParams) (*notion.Page, error)
 }
 
 type PageDetail struct {

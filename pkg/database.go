@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"reflect"
 
 	"github.com/dstotijn/go-notion"
 )
@@ -184,6 +183,26 @@ func TagsToNotionProps(tags []string) []notion.SelectOptions {
 
 func (l *Client) TagDatabasePage(pageId string, tags []string) error {
 	_, err := l.NotionClient.UpdatePage(l.Context, pageId, notion.UpdatePageParams{
+		DatabasePageProperties: notion.DatabasePageProperties{
+			"Tags": notion.DatabasePageProperty{
+				MultiSelect: TagsToNotionProps(tags),
+			},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to update page %s with tags: %w", pageId, err)
+	}
+	return nil
+}
+
+func TagsToNotionProps(tags []string) []notion.SelectOptions {
+	var notionTags []notion.SelectOptions
+	for _, tag := range tags {
+		notionTags = append(notionTags, notion.SelectOptions{
+			Name: tag,
+		})
+	}
+	return notionTags
 		DatabasePageProperties: notion.DatabasePageProperties{
 			"Tags": notion.DatabasePageProperty{
 				MultiSelect: tagsToNotionProps(tags),
