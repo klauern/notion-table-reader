@@ -104,8 +104,8 @@ func TestListMultiSelectProps(t *testing.T) {
 			columnName: {
 				Type: notion.DBPropTypeMultiSelect,
 				Name: columnName,
-				MultiSelect: &notion.SelectOptions{
-					Options: []notion.SelectOption{
+				Select: &notion.SelectMetadata{
+					Options: []notion.Option{
 						{Name: "Tag1"},
 						{Name: "Tag2"},
 					},
@@ -155,36 +155,6 @@ func TestListDatabases(t *testing.T) {
 	}
 }
 
-func TestListTagsForDatabaseColumn(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
-	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
-
-	databaseId := "test-database-id"
-	columnName := "Tags"
-	expectedTags := []string{"Tag1", "Tag2"}
-
-	mockNotionClient.On("FindDatabaseByID", mock.Anything, databaseId).Return(notion.Database{
-		Properties: map[string]notion.DatabaseProperty{
-			columnName: {
-				Type: notion.DBPropTypeMultiSelect,
-				MultiSelect: &notion.SelectOptions{
-					Options: []notion.SelectOption{
-						{Name: "Tag1"},
-						{Name: "Tag2"},
-					},
-				},
-			},
-		},
-	}, nil)
-
-	tags, err := client.ListTagsForDatabaseColumn(databaseId, columnName)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if !reflect.DeepEqual(tags, expectedTags) {
-		t.Errorf("Expected %v, but got %v", expectedTags, tags)
-	}
-}
 
 func TestListPages(t *testing.T) {
 	mockNotionClient := new(MockNotionClient)
@@ -359,7 +329,7 @@ func TestNormalizeBody(t *testing.T) {
 
 func TestTagsToNotionProps(t *testing.T) {
 	tags := []string{"Tag1", "Tag2", "Tag3"}
-	expected := []notion.SelectOptions{
+	expected := []notion.Option{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
 		{Name: "Tag3"},

@@ -54,7 +54,7 @@ func (l *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, 
 	var props []string
 	for _, prop := range database.Properties {
 		if prop.Type == notion.DBPropTypeMultiSelect && prop.Name == columnName {
-			for _, p := range prop.MultiSelect.Options {
+			for _, p := range prop.Select.Options {
 				props = append(props, p.Name)
 			}
 			return props, nil
@@ -96,7 +96,7 @@ func (l *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 	var columns []string
 	for _, prop := range database.Properties {
 		if prop.Type == notion.DBPropTypeMultiSelect {
-			for _, opt := range prop.MultiSelect.Options {
+			for _, opt := range prop.Select.Options {
 				columns = append(columns, opt.Name)
 			}
 			return columns, nil
@@ -172,8 +172,8 @@ func (p PageWithBlocks) NormalizeBody() string {
 	return buf.String()
 }
 
-func tagsToNotionProps(tags []string) []notion.SelectOptions {
-	var notionTags []notion.SelectOptions
+func tagsToNotionProps(tags []string) []notion.Option {
+	var notionTags []notion.Option
 	for _, tag := range tags {
 		notionTags = append(notionTags, notion.SelectOptions{
 			Name: tag,
