@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"errors"
 	"reflect"
 	"testing"
 
@@ -154,7 +153,6 @@ func TestListDatabases(t *testing.T) {
 		t.Errorf("Expected %v, but got %v", expectedDatabases, databases)
 	}
 }
-
 
 func TestListPages(t *testing.T) {
 	mockNotionClient := new(MockNotionClient)
