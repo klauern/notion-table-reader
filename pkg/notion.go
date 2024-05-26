@@ -8,6 +8,7 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
+//go:generate mockgen -destination=mock_notion_test.go -package=pkg_test github.com/klauern/notion-table-reader/pkg NotionClient
 type NotionClient interface {
 	FetchPages(databaseID string, untagged bool) ([]PageDetail, error)
 	TagPage(id string, availableTags []string) error

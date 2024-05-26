@@ -10,6 +10,7 @@ tasks:
   test:
     desc: run tests for the project
     cmds:
+      - go generate ./...
       - go test -coverprofile=coverage.out ./...
 
   coverage:
@@ -35,6 +36,7 @@ tasks:
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - go install github.com/goreleaser/goreleaser@latest
       - go install github.com/klauern/bump/cmd/bump@latest
+      - go install go.uber.org/mock/mockgen@latest
 
   bump:patch:
     desc: "Create a patch version bump"

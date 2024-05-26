@@ -9,6 +9,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+//go:generate mockgen -destination=mock_llm_test.go -package=pkg_test github.com/klauern/notion-table-reader/pkg LLMClient
 type OpenAIClient interface {
 	CreateChatCompletion(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
 }

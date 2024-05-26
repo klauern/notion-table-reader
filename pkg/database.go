@@ -172,8 +172,8 @@ func (p PageWithBlocks) NormalizeBody() string {
 	return buf.String()
 }
 
-func tagsToNotionProps(tags []string) []notion.Option {
-	var notionTags []notion.Option
+func tagsToNotionProps(tags []string) []notion.SelectOptions {
+	var notionTags []notion.SelectOptions
 	for _, tag := range tags {
 		notionTags = append(notionTags, notion.SelectOptions{
 			Name: tag,
