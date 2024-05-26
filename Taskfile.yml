@@ -7,48 +7,39 @@ vars:
   DEFAULT_BRANCH: main # Replace with your default branch if different
 
 tasks:
+  test:
+    desc: run tests for the project
+    cmds:
+      - go test ./...
   tag:
     desc: run the tagging program on my database and tag all the things
     cmds:
       - go run cmd/main.go p query | awk -F'[(|)]' '{print $2}' | xargs -I {} go run cmd/main.go p tag --page_id {}
 
-  get-latest-tag:
+  lint:
+    desc: run linters on the project
     cmds:
-      - git fetch --tags
-      - git describe --tags `git rev-list --tags --max-count=1`
-    silent: true
+      - golangci-lint run
 
-  get-current-version:
+  deps:
+    desc: install dependencies
     cmds:
-      - echo "{{.VERSION}}"
-    silent: true
+      - go mod tidy
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install github.com/goreleaser/goreleaser@latest
+      - go install github.com/klauern/bump/cmd/bump@latest
 
   bump:patch:
     desc: "Create a patch version bump"
     cmds:
-      - |
-        CURRENT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS = FS} {sub(/^v/,"",$0); $3+=1; print "v"$0}')
-        echo "Next patch version: $NEXT_TAG"
-        git tag $NEXT_TAG
-        git push origin $NEXT_TAG
+      - bump patch
 
   bump:minor:
     desc: "Create a minor version bump"
     cmds:
-      - |
-        CURRENT_TAG=$(task: get-latest-tag)
-        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS=FS} {sub(/^v/,"",$0); $3=0; $2+=1; print "v"$0}')
-        echo "Next minor version: $NEXT_TAG"
-        git tag $NEXT_TAG
-        git push origin $NEXT_TAG
+      - bump minor
 
   bump:major:
     desc: "Create a major version bump"
     cmds:
-      - |
-        CURRENT_TAG=$(task: get-latest-tag)
-        NEXT_TAG=$(echo $CURRENT_TAG | awk -F. 'BEGIN {OFS=FS} {sub(/^v/,"",$0); $3=0; $2=0; $1+=1; print "v"$0}')
-        echo "Next major version: $NEXT_TAG"
-        git tag $NEXT_TAG
-        git push origin $NEXT_TAG
+      - bump major
