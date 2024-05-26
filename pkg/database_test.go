@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/dstotijn/go-notion"
-	"github.com/klauern/notion-table-reader/pkg/mocks"
+	"github.com/klauern/notion-table-reader/pkg/pkgmocks"
 	"go.uber.org/mock/gomock"
 )
 
