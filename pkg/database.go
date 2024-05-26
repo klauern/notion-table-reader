@@ -22,6 +22,12 @@ func (l *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, 
 	if l.context == nil {
 		return nil, errors.New("context is not initialized")
 	}
+	if l.NotionClient == nil {
+		return nil, errors.New("NotionClient is not initialized")
+	}
+	if l.context == nil {
+		return nil, errors.New("context is not initialized")
+	}
 	database, err := l.NotionClient.FindDatabaseByID(l.context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("can't retrieve database: %w", err)
