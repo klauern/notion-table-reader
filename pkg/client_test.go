@@ -14,7 +14,7 @@ import (
 type MockClient struct {
 	CreateChatCompletionFunc  func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
 	FindDatabaseByIDFunc      func(ctx context.Context, databaseId string) (notion.Database, error)
-	ListTagsForDatabaseColumn func(dbId, colName string) ([]string, error)
+	ListTagsForDatabaseColumnFunc func(dbId, colName string) ([]string, error)
 }
 
 // CreateChatCompletion is a mock method for CreateChatCompletion method of pkg.Client
@@ -89,7 +89,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func (m *MockClient) ListTagsForDatabaseColumn(dbId, colName string) ([]string, error) {
-	return m.ListTagsForDatabaseColumn(dbId, colName)
+	return m.ListTagsForDatabaseColumnFunc(dbId, colName)
 }
 
 func TestListTagsForDatabaseColumn(t *testing.T) {
@@ -115,7 +115,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 	}
 
 	client := Client{
-		notionClient: mockClient,
+		notionClient: &notion.Client{}, // Use an empty notion.Client for testing
 		context:      context.Background(),
 	}
 
@@ -124,7 +124,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	expectedTags := []string{"tag1", "tag2"}
+	expectedTags = []string{"tag1", "tag2"}
 	if !reflect.DeepEqual(tags, expectedTags) {
 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
 	}
@@ -146,7 +146,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		},
 	}
 
-	tags, err := mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
+	tags, err = mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
