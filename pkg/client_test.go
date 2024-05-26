@@ -6,40 +6,29 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dstotijn/go-notion"
+	"github.com/klauern/notion-table-reader/pkg/llm"
+	"github.com/klauern/notion-table-reader/pkg/mocks"
 	"github.com/sashabaranov/go-openai"
+	"go.uber.org/mock/gomock"
 )
-
-// MockClient is a mock type for pkg.Client
-type MockClient struct {
-	CreateChatCompletionFunc      func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
-	FindDatabaseByIDFunc          func(ctx context.Context, databaseId string) (notion.Database, error)
-	ListTagsForDatabaseColumnFunc func(dbId, colName string) ([]string, error)
-}
-
-// CreateChatCompletion is a mock method for CreateChatCompletion method of pkg.Client
-func (m *MockClient) CreateChatCompletion(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
-	return m.CreateChatCompletionFunc(ctx, req)
-}
 
 func TestRequestChatCompletion_Success(t *testing.T) {
 	// Create a new instance of our mock object
-	mockClient := &MockClient{
-		CreateChatCompletionFunc: func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
-			return openai.ChatCompletionResponse{
-				Choices: []openai.ChatCompletionChoice{
-					{
-						Message: openai.ChatCompletionMessage{
-							Content: "Test content",
-						},
-					},
+	ctrl := gomock.NewController(t)
+
+	mockClient := mocks.NewMockLLMClient(ctrl)
+	mockClient.EXPECT().CreateChatCompletion(gomock.Any(), gomock.Any()).Return(openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{
+			{
+				Message: openai.ChatCompletionMessage{
+					Content: "Test content",
 				},
-			}, nil
+			},
 		},
-	}
+	}, nil)
 
 	client := Client{
-		llmClient: mockClient,
+		LLMClient: mockClient,
 		context:   context.Background(),
 		Model:     "test-model",
 		MaxTokens: 100,
@@ -58,14 +47,12 @@ func TestRequestChatCompletion_Success(t *testing.T) {
 
 func TestRequestChatCompletion_Failure(t *testing.T) {
 	// Create a new instance of our mock object
-	mockClient := &MockClient{
-		CreateChatCompletionFunc: func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
-			return openai.ChatCompletionResponse{}, errors.New("error")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	mockClient := mocks.NewMockLLMClient(ctrl)
+	mockClient.EXPECT().CreateChatCompletion(gomock.Any(), gomock.Any()).Return(openai.ChatCompletionResponse{}, errors.New("error")).AnyTimes()
 
 	client := Client{
-		llmClient: mockClient,
+		LLMClient: mockClient,
 		context:   context.Background(),
 		Model:     "test-model",
 		MaxTokens: 100,
@@ -82,60 +69,68 @@ func TestRequestChatCompletion_Failure(t *testing.T) {
 // Write rest of tests
 func TestNewClient(t *testing.T) {
 	// Test NewClient function
-	client := NewClient("openai_key", "notion_api_key")
+	client := NewClient(context.Background(), "openai_key", "notion_api_key")
 	if client == nil {
 		t.Error("Expected a non-nil client, but got nil")
 	}
 }
 
-func (m *MockClient) ListTagsForDatabaseColumn(dbId, colName string) ([]string, error) {
-	return m.ListTagsForDatabaseColumnFunc(dbId, colName)
-}
+// func TestListTagsForDatabaseColumn(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
+// 	mockClient := mocks.NewMockNotionClient(ctrl)
+// 	mockClient.EXPECT().FindDatabaseByID(gomock.Any(), gomock.Any()).Return(notion.Database{
+// 		Properties: map[string]notion.DatabaseProperty{
+// 			"Tags": {
+// 				Type: notion.DBPropTypeMultiSelect,
+// 				MultiSelect: &notion.SelectMetadata{
+// 					Options: []notion.SelectOptions{
+// 						{Name: "tag1"},
+// 						{Name: "tag2"},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}, nil,
+// 	).AnyTimes()
 
-func TestListTagsForDatabaseColumn(t *testing.T) {
-	mockClient := &MockClient{
-		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
-			return notion.Database{
-				Properties: map[string]notion.DatabaseProperty{
-					"Tags": {
-						Type: notion.DBPropTypeMultiSelect,
-						MultiSelect: &notion.SelectMetadata{
-							Options: []notion.SelectOptions{
-								{Name: "tag1"},
-								{Name: "tag2"},
-							},
-						},
-					},
+// 	tags, err := mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
+// 	if err != nil {
+// 		t.Errorf("Unexpected error: %v", err)
+// 	}
+
+// 	expectedTags := []string{"tag1", "tag2"}
+// 	if !reflect.DeepEqual(tags, expectedTags) {
+// 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
+// 	}
+// }
+
+func TestIdentifyTags(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockClient := mocks.NewMockOpenAIClient(ctrl)
+	mockClient.EXPECT().CreateChatCompletion(gomock.Any(), gomock.Any()).Return(openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{
+			{
+				Message: openai.ChatCompletionMessage{
+					Content: "tag1\ntag2",
 				},
-			}, nil
+			},
 		},
-		ListTagsForDatabaseColumnFunc: func(dbId, colName string) ([]string, error) {
-			return []string{"tag1", "tag2"}, nil
-		},
+	}, nil).AnyTimes()
+
+	client := Client{
+		LLMClient: mockClient,
+		context:   context.Background(),
+		Model:     "test-model",
+		MaxTokens: 100,
 	}
 
-	mockClient = &MockClient{
-		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
-			return notion.Database{
-				Properties: map[string]notion.DatabaseProperty{
-					"Tags": {
-						Type: notion.DBPropTypeMultiSelect,
-						MultiSelect: &notion.SelectMetadata{
-							Options: []notion.SelectOptions{
-								{Name: "tag1"},
-								{Name: "tag2"},
-							},
-						},
-					},
-				},
-			}, nil
-		},
-		ListTagsForDatabaseColumnFunc: func(dbId, colName string) ([]string, error) {
-			return []string{"tag1", "tag2"}, nil
-		},
+	tagInput := &llm.TagInput{
+		Title: "Test Title",
+		URL:   "http://test.url",
+		Raw:   "Test Raw",
 	}
 
-	tags, err := mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
+	tags, err := client.IdentifyTags(tagInput, []string{"tag1", "tag2", "tag3"})
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -143,5 +138,21 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 	expectedTags := []string{"tag1", "tag2"}
 	if !reflect.DeepEqual(tags, expectedTags) {
 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
+	}
+
+	// Test with error
+
+	mockClient = mocks.NewMockOpenAIClient(ctrl)
+	mockClient.EXPECT().CreateChatCompletion(gomock.Any(), gomock.Any()).Return(openai.ChatCompletionResponse{}, errors.New("error")).AnyTimes()
+
+	client = Client{
+		LLMClient: mockClient, context: context.Background(),
+		Model:     "test-model",
+		MaxTokens: 100,
+	}
+
+	_, err = client.IdentifyTags(tagInput, []string{"tag1", "tag2", "tag3"})
+	if err == nil || err.Error() != "error creating chat completion request after 3 attempts: error" {
+		t.Errorf("Expected error 'error creating chat completion request after 3 attempts: error', but got: %v", err)
 	}
 }

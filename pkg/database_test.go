@@ -8,6 +8,7 @@ import (
 	"github.com/dstotijn/go-notion"
 	"github.com/klauern/notion-table-reader/pkg"
 	"github.com/klauern/notion-table-reader/pkg/mocks"
+	myNotion "github.com/klauern/notion-table-reader/pkg/notion"
 	"go.uber.org/mock/gomock"
 )
 
@@ -46,7 +47,7 @@ func TestExtractRichText(t *testing.T) {
 		},
 	}
 
-	pageWithBlocks := &pkg.PageWithBlocks{
+	pageWithBlocks := &myNotion.PageWithBlocks{
 		Blocks: blocks,
 	}
 
@@ -57,7 +58,7 @@ func TestExtractRichText(t *testing.T) {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
 	expected = "HelloWorld"
-	result = pkg.ExtractRichText(richText)
+	result = myNotion.ExtractRichText(richText)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -67,8 +68,9 @@ func TestListMultiSelectProps(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockNotionClient := pkg_test.NewMockNotionClient(ctrl)
-	client := &pkg.Client{NotionClient: mockNotionClient, Context: context.TODO()}
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
+	client := pkg.NewClient(context.Background(), "", "")
+	client.NotionClient = mockNotionClient
 
 	databaseId := "test-database-id"
 	columnName := "Tags"
@@ -102,8 +104,9 @@ func TestListDatabases(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockNotionClient := pkg_test.NewMockNotionClient(ctrl)
-	client := &pkg.Client{NotionClient: mockNotionClient, Context: context.TODO()}
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
+	client := pkg.NewClient(context.Background(), "", "")
+	client.NotionClient = mockNotionClient
 
 	query := "test-query"
 	expectedDatabases := []notion.Database{
@@ -137,8 +140,9 @@ func TestListPages(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockNotionClient := pkg_test.NewMockNotionClient(ctrl)
-	client := &pkg.Client{NotionClient: mockNotionClient, Context: context.TODO()}
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
+	client := pkg.NewClient(context.Background(), "", "")
+	client.NotionClient = mockNotionClient
 
 	databaseId := "test-database-id"
 	expectedPages := []notion.Page{
@@ -172,11 +176,12 @@ func TestGetPage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockNotionClient := pkg_test.NewMockNotionClient(ctrl)
-	client := &pkg.Client{NotionClient: mockNotionClient, Context: context.TODO()}
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
+	client := pkg.NewClient(context.Background(), "", "")
+	client.NotionClient = mockNotionClient
 
 	pageId := "test-page-id"
-	expectedPage := &PageWithBlocks{
+	expectedPage := &myNotion.PageWithBlocks{
 		Page: &notion.Page{ID: pageId},
 		Blocks: []notion.Block{
 			&notion.ParagraphBlock{RichText: []notion.RichText{{PlainText: "Hello"}}},
@@ -204,7 +209,8 @@ func TestTagDatabasePage(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockNotionClient := mocks.NewMockNotionClient(ctrl)
-	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
+	client := pkg.NewClient(context.Background(), "", "")
+	client.NotionClient = mockNotionClient
 
 	pageId := "test-page-id"
 	tags := []string{"Tag1", "Tag2"}
@@ -212,7 +218,7 @@ func TestTagDatabasePage(t *testing.T) {
 	mockNotionClient.EXPECT().UpdatePage(gomock.Any(), pageId, notion.UpdatePageParams{
 		DatabasePageProperties: notion.DatabasePageProperties{
 			"Tags": notion.DatabasePageProperty{
-				MultiSelect: tagsToNotionProps(tags),
+				MultiSelect: pkg.TagsToNotionProps(tags),
 			},
 		},
 	}).Return(notion.Page{ID: pageId}, nil)
@@ -231,7 +237,7 @@ func TestBlockToMarkdown(t *testing.T) {
 		},
 	}
 	expected := "HelloWorld"
-	result := pkg.BlockToMarkdown(paragraphBlock)
+	result := myNotion.BlockToMarkdown(paragraphBlock)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -242,7 +248,7 @@ func TestBlockToMarkdown(t *testing.T) {
 		},
 	}
 	expected = "Heading 1"
-	result = pkg.BlockToMarkdown(heading1Block)
+	result = myNotion.BlockToMarkdown(heading1Block)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -253,7 +259,7 @@ func TestBlockToMarkdown(t *testing.T) {
 		},
 	}
 	expected = "Heading 2"
-	result = pkg.BlockToMarkdown(heading2Block)
+	result = myNotion.BlockToMarkdown(heading2Block)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -264,7 +270,7 @@ func TestBlockToMarkdown(t *testing.T) {
 		},
 	}
 	expected = "Heading 3"
-	result = pkg.BlockToMarkdown(heading3Block)
+	result = myNotion.BlockToMarkdown(heading3Block)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -275,7 +281,7 @@ func TestBlockToMarkdown(t *testing.T) {
 		},
 	}
 	expected = "Item 1"
-	result = pkg.BlockToMarkdown(bulletedListItemBlock)
+	result = myNotion.BlockToMarkdown(bulletedListItemBlock)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
@@ -301,7 +307,7 @@ func TestNormalizeBody(t *testing.T) {
 		},
 	}
 
-	pageWithBlocks := &pkg.PageWithBlocks{
+	pageWithBlocks := &myNotion.PageWithBlocks{
 		Blocks: blocks,
 	}
 
@@ -315,7 +321,7 @@ func TestNormalizeBody(t *testing.T) {
 
 func TestTagsToNotionProps(t *testing.T) {
 	tags := []string{"Tag1", "Tag2", "Tag3"}
-	expected := []notion.Option{
+	expected := []notion.SelectOptions{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
 		{Name: "Tag3"},

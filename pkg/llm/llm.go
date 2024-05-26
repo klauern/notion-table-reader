@@ -1,4 +1,4 @@
-package pkg
+package llm
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-//go:generate mockgen -destination=mock_llm_test.go -package=pkg_test github.com/klauern/notion-table-reader/pkg LLMClient
+//go:generate mockgen -destination=../mocks/mock_llm.go -package=mocks . LLMClient,OpenAIClient
 type OpenAIClient interface {
 	CreateChatCompletion(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
 }
@@ -77,26 +77,6 @@ func GenerateTagInputMessage(input *TagInput, tokenLimit int) string {
 	return message
 }
 
-func (l *Client) IdentifyTags(messageContent *TagInput, tagOptions []string) ([]string, error) {
-	messages := []openai.ChatCompletionMessage{
-		{
-			Role:    "system",
-			Content: GenerateSystemPrompt(tagOptions),
-		},
-		{
-			Role:    "user",
-			Content: GenerateTagInputMessage(messageContent, l.MaxTokens),
-		},
-	}
-
-	response, err := l.RequestChatCompletion(messages)
-	if err != nil {
-		return nil, err
-	}
-
-	return splitResponse(response), nil
-}
-
-func splitResponse(response string) []string {
+func SplitResponse(response string) []string {
 	return strings.Split(response, "\n")
 }

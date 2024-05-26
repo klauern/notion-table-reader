@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/dstotijn/go-notion"
 	"github.com/klauern/notion-table-reader/pkg"
+	myNotion "github.com/klauern/notion-table-reader/pkg/notion"
 	"github.com/urfave/cli/v2"
 )
 
@@ -20,7 +22,7 @@ var (
 )
 
 func init() {
-	client = pkg.NewClient("", "")
+	client = pkg.NewClient(context.Background(), "", "")
 	tags, err := client.ListTagsForDatabaseColumn(DatabaseID, "Tags")
 	if err != nil {
 		panic(err)
@@ -137,7 +139,7 @@ func QueryPages(context *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to query pages: %w", err)
 	}
-	pkg.PrintPageDetails(pageDetails)
+	myNotion.PrintPageDetails(pageDetails)
 	return nil
 }
 
