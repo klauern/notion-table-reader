@@ -13,7 +13,7 @@ func TestExtractRichText(t *testing.T) {
 		{PlainText: "World"},
 	}
 
-	blocks = []notion.Block{
+	blocks := []notion.Block{
 		&notion.ParagraphBlock{
 			RichText: []notion.RichText{
 				{PlainText: "Hello"},
@@ -42,18 +42,18 @@ func TestExtractRichText(t *testing.T) {
 		},
 	}
 
-	pageWithBlocks = &PageWithBlocks{
+	pageWithBlocks := &PageWithBlocks{
 		Blocks: blocks,
 	}
 
-	expected = "HelloWorldHeading 1Heading 2Heading 3Item 1"
-	result = pageWithBlocks.NormalizeBody()
+	expected := "HelloWorldHeading 1Heading 2Heading 3Item 1"
+	result := pageWithBlocks.NormalizeBody()
 
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
-	expected := "HelloWorld"
-	result := extractRichText(richText)
+	expected = "HelloWorld"
+	result = extractRichText(richText)
 	if result != expected {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
