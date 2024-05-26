@@ -13,6 +13,7 @@ import (
 )
 
 func TestExtractRichText(t *testing.T) {
+	RegisterTestingT(t)
 	richText := []notion.RichText{
 		{PlainText: "Hello"},
 		{PlainText: "World"},
@@ -54,9 +55,7 @@ func TestExtractRichText(t *testing.T) {
 	expected := "HelloWorldHeading 1Heading 2Heading 3Item 1"
 	result := pageWithBlocks.NormalizeBody()
 
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 	expected = "HelloWorld"
 	result = myNotion.ExtractRichText(richText)
 	if result != expected {
@@ -92,12 +91,8 @@ func TestListMultiSelectProps(t *testing.T) {
 	}, nil)
 
 	props, err := client.ListMultiSelectProps(databaseId, columnName)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if !reflect.DeepEqual(props, expectedProps) {
-		t.Errorf("Expected %v, but got %v", expectedProps, props)
-	}
+	Expect(err).To(BeNil())
+	Expect(props).To(Equal(expectedProps))
 }
 
 func TestListDatabases(t *testing.T) {
@@ -128,12 +123,8 @@ func TestListDatabases(t *testing.T) {
 	}, nil)
 
 	databases, err := client.ListDatabases(query)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if !reflect.DeepEqual(databases, expectedDatabases) {
-		t.Errorf("Expected %v, but got %v", expectedDatabases, databases)
-	}
+	Expect(err).To(BeNil())
+	Expect(databases).To(Equal(expectedDatabases))
 }
 
 func TestListPages(t *testing.T) {
@@ -164,12 +155,8 @@ func TestListPages(t *testing.T) {
 	}, nil)
 
 	pages, err := client.ListPages(databaseId, true)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if !reflect.DeepEqual(pages, expectedPages) {
-		t.Errorf("Expected %v, but got %v", expectedPages, pages)
-	}
+	Expect(err).To(BeNil())
+	Expect(pages).To(Equal(expectedPages))
 }
 
 func TestGetPage(t *testing.T) {
@@ -196,12 +183,8 @@ func TestGetPage(t *testing.T) {
 	}, nil)
 
 	page, err := client.GetPage(pageId)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
-	if !reflect.DeepEqual(page, expectedPage) {
-		t.Errorf("Expected %+v, but got %+v", expectedPage, page)
-	}
+	Expect(err).To(BeNil())
+	Expect(page).To(Equal(expectedPage))
 }
 
 func TestTagDatabasePage(t *testing.T) {
@@ -224,9 +207,7 @@ func TestTagDatabasePage(t *testing.T) {
 	}).Return(notion.Page{ID: pageId}, nil)
 
 	err := client.TagDatabasePage(pageId, tags)
-	if err != nil {
-		t.Fatalf("Expected no error, but got %v", err)
-	}
+	Expect(err).To(BeNil())
 }
 
 func TestBlockToMarkdown(t *testing.T) {
@@ -327,7 +308,5 @@ func TestTagsToNotionProps(t *testing.T) {
 		{Name: "Tag3"},
 	}
 	result := pkg.TagsToNotionProps(tags)
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Expected %+v, but got %+v", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 }
