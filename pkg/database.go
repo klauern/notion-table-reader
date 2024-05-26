@@ -15,7 +15,7 @@ type PageWithBlocks struct {
 	Blocks []notion.Block
 }
 
-func extractRichText(richText []notion.RichText) string {
+func ExtractRichText(richText []notion.RichText) string {
 	var buf bytes.Buffer
 	for _, t := range richText {
 		buf.WriteString(t.PlainText)
@@ -26,28 +26,28 @@ func extractRichText(richText []notion.RichText) string {
 func blockToMarkdown(block notion.Block) string {
 	switch b := block.(type) {
 	case *notion.ParagraphBlock:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.Heading1Block:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.Heading2Block:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.Heading3Block:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.BulletedListItemBlock:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.NumberedListItemBlock:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.ToDoBlock:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	case *notion.CalloutBlock:
-		return extractRichText(b.RichText)
+		return ExtractRichText(b.RichText)
 	default:
 		return ""
 	}
 }
 
 func (l *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, error) {
-	database, err := l.notionClient.FindDatabaseByID(l.context, databaseId)
+	database, err := l.NotionClient.FindDatabaseByID(l.Context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("can't retrieve database: %w", err)
 	}
@@ -64,7 +64,7 @@ func (l *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, 
 }
 
 func (l *Client) ListDatabases(query string) ([]notion.Database, error) {
-	resp, err := l.notionClient.Search(l.context, &notion.SearchOpts{
+	resp, err := l.NotionClient.Search(l.Context, &notion.SearchOpts{
 		Query: query,
 		Filter: &notion.SearchFilter{
 			Value:    "database",
@@ -88,7 +88,7 @@ func (l *Client) ListDatabases(query string) ([]notion.Database, error) {
 }
 
 func (l *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]string, error) {
-	database, err := l.notionClient.FindDatabaseByID(l.context, databaseId)
+	database, err := l.NotionClient.FindDatabaseByID(l.Context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding database: %w", err)
 	}
@@ -107,7 +107,7 @@ func (l *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 }
 
 func (l *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, error) {
-	results, err := l.notionClient.QueryDatabase(l.context, databaseId, &notion.DatabaseQuery{
+	results, err := l.NotionClient.QueryDatabase(l.Context, databaseId, &notion.DatabaseQuery{
 		Filter: &notion.DatabaseQueryFilter{
 			Property: "Tags",
 			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
@@ -124,12 +124,12 @@ func (l *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, er
 }
 
 func (l *Client) GetPage(pageId string) (*PageWithBlocks, error) {
-	page, err := l.notionClient.FindPageByID(l.context, pageId)
+	page, err := l.NotionClient.FindPageByID(l.Context, pageId)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding page: %w", err)
 	}
 	slog.Debug("page", "id", page.ID, "parent_id", page.Parent.PageID)
-	blocks, err := l.notionClient.FindBlockChildrenByID(l.context, page.ID, &notion.PaginationQuery{})
+	blocks, err := l.NotionClient.FindBlockChildrenByID(l.Context, page.ID, &notion.PaginationQuery{})
 	if err != nil {
 		return nil, fmt.Errorf("Error finding blocks: %w", err)
 	}
@@ -172,7 +172,7 @@ func (p PageWithBlocks) NormalizeBody() string {
 	return buf.String()
 }
 
-func tagsToNotionProps(tags []string) []notion.SelectOptions {
+func TagsToNotionProps(tags []string) []notion.SelectOptions {
 	var notionTags []notion.SelectOptions
 	for _, tag := range tags {
 		notionTags = append(notionTags, notion.SelectOptions{
@@ -183,7 +183,7 @@ func tagsToNotionProps(tags []string) []notion.SelectOptions {
 }
 
 func (l *Client) TagDatabasePage(pageId string, tags []string) error {
-	_, err := l.notionClient.UpdatePage(l.context, pageId, notion.UpdatePageParams{
+	_, err := l.NotionClient.UpdatePage(l.Context, pageId, notion.UpdatePageParams{
 		DatabasePageProperties: notion.DatabasePageProperties{
 			"Tags": notion.DatabasePageProperty{
 				MultiSelect: tagsToNotionProps(tags),
