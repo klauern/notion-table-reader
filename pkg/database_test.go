@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/dstotijn/go-notion"
-	"github.com/golang/mock/gomock"
 	"github.com/klauern/notion-table-reader/pkg/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func TestExtractRichText(t *testing.T) {
@@ -61,7 +61,6 @@ func TestExtractRichText(t *testing.T) {
 		t.Errorf("Expected %s, but got %s", expected, result)
 	}
 }
-
 
 func TestListMultiSelectProps(t *testing.T) {
 	ctrl := gomock.NewController(t)
