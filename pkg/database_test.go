@@ -200,7 +200,7 @@ func TestGetPage(t *testing.T) {
 		t.Fatalf("Expected no error, but got %v", err)
 	}
 	if !reflect.DeepEqual(page, expectedPage) {
-		t.Errorf("Expected %v, but got %v", expectedPage, page)
+		t.Errorf("Expected %+v, but got %+v", expectedPage, page)
 	}
 }
 
