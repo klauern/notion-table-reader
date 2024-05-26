@@ -109,7 +109,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 				},
 			}, nil
 		},
-		ListTagsForDatabaseColumn: func(dbId, colName string) ([]string, error) {
+		ListTagsForDatabaseColumnFunc: func(dbId, colName string) ([]string, error) {
 			return []string{"tag1", "tag2"}, nil
 		},
 	}
@@ -151,7 +151,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	expectedTags := []string{"tag1", "tag2"}
+	expectedTags = []string{"tag1", "tag2"}
 	if !reflect.DeepEqual(tags, expectedTags) {
 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
 	}
