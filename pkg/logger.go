@@ -6,12 +6,9 @@ import (
 	"strings"
 )
 
-var (
-	Log      *slog.Logger
-	LogLevel slog.Level = slog.LevelInfo
-)
+var LogLevel slog.Level = slog.LevelInfo
 
-func init() {
+func SetupLogging() {
 	switch level := os.Getenv("LOG_LEVEL"); strings.ToLower(level) {
 	case "debug":
 		LogLevel = slog.LevelDebug
@@ -22,8 +19,9 @@ func init() {
 	default:
 		LogLevel = slog.LevelInfo
 	}
-	Log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 		Level:     LogLevel,
 	}))
+	slog.SetDefault(log)
 }

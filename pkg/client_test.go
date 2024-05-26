@@ -12,8 +12,8 @@ import (
 
 // MockClient is a mock type for pkg.Client
 type MockClient struct {
-	CreateChatCompletionFunc  func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
-	FindDatabaseByIDFunc      func(ctx context.Context, databaseId string) (notion.Database, error)
+	CreateChatCompletionFunc      func(ctx context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)
+	FindDatabaseByIDFunc          func(ctx context.Context, databaseId string) (notion.Database, error)
 	ListTagsForDatabaseColumnFunc func(dbId, colName string) ([]string, error)
 }
 
@@ -129,7 +129,7 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		t.Errorf("Expected tags %v, but got %v", expectedTags, tags)
 	}
 
-	mockClient := &MockClient{
+	mockClient = &MockClient{
 		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
 			return notion.Database{
 				Properties: map[string]notion.DatabaseProperty{

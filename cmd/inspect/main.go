@@ -9,7 +9,7 @@ import (
 const DatabaseID = "2ce556682898478d8e9d175badac759e"
 
 func main() {
-	tags, err := pkg.NewClient().ListTagsForDatabaseColumn(DatabaseID, "Tags")
+	tags, err := pkg.NewClient("", "").ListTagsForDatabaseColumn(DatabaseID, "Tags")
 	if err != nil {
 		panic(err)
 	}

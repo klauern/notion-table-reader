@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log/slog"
 	"reflect"
 
 	"github.com/dstotijn/go-notion"
@@ -45,8 +46,8 @@ func blockToMarkdown(block notion.Block) string {
 	}
 }
 
-func (c *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, error) {
-	database, err := c.client.FindDatabaseByID(c.context, databaseId)
+func (l *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, error) {
+	database, err := l.notionClient.FindDatabaseByID(l.context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("can't retrieve database: %w", err)
 	}
@@ -62,8 +63,8 @@ func (c *Client) ListMultiSelectProps(databaseId, columnName string) ([]string, 
 	return nil, fmt.Errorf("Unable to find column %s", columnName)
 }
 
-func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
-	resp, err := c.client.Search(c.context, &notion.SearchOpts{
+func (l *Client) ListDatabases(query string) ([]notion.Database, error) {
+	resp, err := l.notionClient.Search(l.context, &notion.SearchOpts{
 		Query: query,
 		Filter: &notion.SearchFilter{
 			Value:    "database",
@@ -86,8 +87,8 @@ func (c *Client) ListDatabases(query string) ([]notion.Database, error) {
 	return databases, nil
 }
 
-func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]string, error) {
-	database, err := c.client.FindDatabaseByID(c.context, databaseId)
+func (l *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]string, error) {
+	database, err := l.notionClient.FindDatabaseByID(l.context, databaseId)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding database: %w", err)
 	}
@@ -105,8 +106,8 @@ func (c *Client) ListTagsForDatabaseColumn(databaseId, columnName string) ([]str
 	return nil, errors.New("No columns found")
 }
 
-func (c *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, error) {
-	results, err := c.client.QueryDatabase(c.context, databaseId, &notion.DatabaseQuery{
+func (l *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, error) {
+	results, err := l.notionClient.QueryDatabase(l.context, databaseId, &notion.DatabaseQuery{
 		Filter: &notion.DatabaseQueryFilter{
 			Property: "Tags",
 			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
@@ -122,13 +123,13 @@ func (c *Client) ListPages(databaseId string, notTagged bool) ([]notion.Page, er
 	return results.Results, nil
 }
 
-func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
-	page, err := c.client.FindPageByID(c.context, pageId)
+func (l *Client) GetPage(pageId string) (*PageWithBlocks, error) {
+	page, err := l.notionClient.FindPageByID(l.context, pageId)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding page: %w", err)
 	}
-	Log.Debug("page", "id", page.ID, "parent_id", page.Parent.PageID)
-	blocks, err := c.client.FindBlockChildrenByID(c.context, page.ID, &notion.PaginationQuery{})
+	slog.Debug("page", "id", page.ID, "parent_id", page.Parent.PageID)
+	blocks, err := l.notionClient.FindBlockChildrenByID(l.context, page.ID, &notion.PaginationQuery{})
 	if err != nil {
 		return nil, fmt.Errorf("Error finding blocks: %w", err)
 	}
@@ -154,7 +155,7 @@ func (c *Client) GetPage(pageId string) (*PageWithBlocks, error) {
 		case *notion.CalloutBlock:
 			validBlock = *block
 		default:
-			Log.Debug("unrecognized", "type", reflect.TypeOf(block))
+			slog.Debug("unrecognized", "type", reflect.TypeOf(block))
 			continue
 		}
 		pageBlocks.Blocks = append(pageBlocks.Blocks, validBlock.(notion.Block))
@@ -181,8 +182,8 @@ func tagsToNotionProps(tags []string) []notion.SelectOptions {
 	return notionTags
 }
 
-func (c *Client) TagDatabasePage(pageId string, tags []string) error {
-	_, err := c.client.UpdatePage(c.context, pageId, notion.UpdatePageParams{
+func (l *Client) TagDatabasePage(pageId string, tags []string) error {
+	_, err := l.notionClient.UpdatePage(l.context, pageId, notion.UpdatePageParams{
 		DatabasePageProperties: notion.DatabasePageProperties{
 			"Tags": notion.DatabasePageProperty{
 				MultiSelect: tagsToNotionProps(tags),

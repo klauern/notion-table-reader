@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/dstotijn/go-notion"
@@ -10,17 +11,18 @@ import (
 )
 
 type Client struct {
-	client    *notion.Client
-	context   context.Context
-	llmClient *openai.Client
-	Model     string
-	MaxTokens int
+	llmClient    OpenAIClient
+	context      context.Context
+	Model        string
+	MaxTokens    int
+	notionClient *notion.Client
 }
 
 var tokenMax map[string]int = map[string]int{
-	openai.GPT4TurboPreview: 4096,
+	openai.GPT4o: 4096,
 }
 
+// NewClient creates a new client for the given API keys and returns a *Client.
 func NewClient(openai_key string, notion_api_key string) *Client {
 	if openai_key == "" {
 		openai_key = os.Getenv("OPENAI_API_KEY")
@@ -29,19 +31,19 @@ func NewClient(openai_key string, notion_api_key string) *Client {
 		notion_api_key = os.Getenv("NOTION_API_KEY")
 	}
 	config := openai.DefaultConfig(openai_key)
-	client := openai.NewClientWithConfig(config)
 	model := openai.GPT4TurboPreview
 	maxToken := tokenMax[model]
 	return &Client{
-		client:    notion.NewClient(notion_api_key),
-		context:   context.Background(),
-		llmClient: client,
-		Model:     model,
-		MaxTokens: maxToken,
+		context:      context.Background(),
+		llmClient:    openai.NewClientWithConfig(config),
+		notionClient: notion.NewClient(notion_api_key),
+		Model:        model,
+		MaxTokens:    maxToken,
 	}
 }
 
-func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage) (string, error) {
+// RequestChatCompletion returns a chat completion response.
+func (l *Client) RequestChatCompletion(messages []openai.ChatCompletionMessage) (string, error) {
 	var resp openai.ChatCompletionResponse
 	var err error
 
@@ -55,7 +57,7 @@ func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage) (
 		if err == nil {
 			break
 		}
-		Log.Error("Getting chat completion", "resp", err)
+		slog.Error("Getting chat completion", "resp", err)
 
 		fmt.Printf("Error creating chat completion request (attempt %d): %v\n", i+1, err)
 		if i < retries-1 {
@@ -67,6 +69,6 @@ func (l Client) RequestChatCompletion(messages []openai.ChatCompletionMessage) (
 		return "", fmt.Errorf("error creating chat completion request after %d attempts: %w", retries, err)
 	}
 
-	Log.Debug("number of responses", "count", len(resp.Choices))
+	slog.Debug("number of responses", "count", len(resp.Choices))
 	return resp.Choices[0].Message.Content, nil
 }
