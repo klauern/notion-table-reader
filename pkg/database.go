@@ -98,34 +98,12 @@ func (l *Client) GetPage(pageId string) (*readNotion.PageWithBlocks, error) {
 		return nil, fmt.Errorf("Error finding blocks: %w", err)
 	}
 
-	pageBlocks := readNotion.PageWithBlocks{}
-	pageBlocks.Page = &page
-	for _, block := range blocks.Results {
-		// If block is of BlockType Paragraph, NumberedListItem, Heading1, Heading2, or BulletedListItem, parse it and store
-		var validBlock interface{}
-		switch block := block.(type) {
-		case *notion.ParagraphBlock:
-			validBlock = *block
-		case *notion.NumberedListItemBlock:
-			validBlock = *block
-		case *notion.BulletedListItemBlock:
-			validBlock = *block
-		case *notion.Heading1Block:
-			validBlock = *block
-		case *notion.Heading2Block:
-			validBlock = *block
-		case *notion.Heading3Block:
-			validBlock = *block
-		case *notion.CalloutBlock:
-			validBlock = *block
-		default:
-			slog.Debug("unrecognized", "type", reflect.TypeOf(block))
-			continue
-		}
-		pageBlocks.Blocks = append(pageBlocks.Blocks, validBlock.(notion.Block))
+	pageWithBlocks := readNotion.PageWithBlocks{
+		Page:   &page,
+		Blocks: blocks.Results,
 	}
 
-	return &pageBlocks, nil
+	return &pageWithBlocks, nil
 }
 
 func TagsToNotionProps(tags []string) []notion.SelectOptions {
