@@ -6,7 +6,8 @@ import (
 	"testing"
 
 	"github.com/dstotijn/go-notion"
-	"github.com/stretchr/testify/mock"
+	"github.com/golang/mock/gomock"
+	"github.com/klauern/notion-table-reader/pkg/mocks"
 )
 
 func TestExtractRichText(t *testing.T) {
@@ -61,44 +62,19 @@ func TestExtractRichText(t *testing.T) {
 	}
 }
 
-type MockNotionClient struct {
-	mock.Mock
-}
-
-func (m *MockNotionClient) FindDatabaseByID(ctx context.Context, databaseId string) (notion.Database, error) {
-	args := m.Called(ctx, databaseId)
-	return args.Get(0).(notion.Database), args.Error(1)
-}
-
-func (m *MockNotionClient) Search(ctx context.Context, opts *notion.SearchOpts) (notion.SearchResponse, error) {
-	args := m.Called(ctx, opts)
-	return args.Get(0).(notion.SearchResponse), args.Error(1)
-}
-
-func (m *MockNotionClient) FindPageByID(ctx context.Context, pageId string) (notion.Page, error) {
-	args := m.Called(ctx, pageId)
-	return args.Get(0).(notion.Page), args.Error(1)
-}
-
-func (m *MockNotionClient) FindBlockChildrenByID(ctx context.Context, blockId string, pagination *notion.PaginationQuery) (notion.BlockChildrenResponse, error) {
-	args := m.Called(ctx, blockId, pagination)
-	return args.Get(0).(notion.BlockChildrenResponse), args.Error(1)
-}
-
-func (m *MockNotionClient) UpdatePage(ctx context.Context, pageId string, params notion.UpdatePageParams) (notion.Page, error) {
-	args := m.Called(ctx, pageId, params)
-	return args.Get(0).(notion.Page), args.Error(1)
-}
 
 func TestListMultiSelectProps(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
 	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
 
 	databaseId := "test-database-id"
 	columnName := "Tags"
 	expectedProps := []string{"Tag1", "Tag2"}
 
-	mockNotionClient.On("FindDatabaseByID", mock.Anything, databaseId).Return(notion.Database{
+	mockNotionClient.EXPECT().FindDatabaseByID(gomock.Any(), databaseId).Return(notion.Database{
 		Properties: map[string]notion.DatabaseProperty{
 			columnName: {
 				Type: notion.DBPropTypeMultiSelect,
@@ -123,7 +99,10 @@ func TestListMultiSelectProps(t *testing.T) {
 }
 
 func TestListDatabases(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
 	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
 
 	query := "test-query"
@@ -132,7 +111,7 @@ func TestListDatabases(t *testing.T) {
 		{Title: []notion.RichText{{PlainText: "Database 2"}}},
 	}
 
-	mockNotionClient.On("Search", mock.Anything, &notion.SearchOpts{
+	mockNotionClient.EXPECT().Search(gomock.Any(), &notion.SearchOpts{
 		Query: query,
 		Filter: &notion.SearchFilter{
 			Value:    "database",
@@ -155,7 +134,10 @@ func TestListDatabases(t *testing.T) {
 }
 
 func TestListPages(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
 	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
 
 	databaseId := "test-database-id"
@@ -164,7 +146,7 @@ func TestListPages(t *testing.T) {
 		{ID: "page-2"},
 	}
 
-	mockNotionClient.On("QueryDatabase", mock.Anything, databaseId, &notion.DatabaseQuery{
+	mockNotionClient.EXPECT().QueryDatabase(gomock.Any(), databaseId, &notion.DatabaseQuery{
 		Filter: &notion.DatabaseQueryFilter{
 			Property: "Tags",
 			DatabaseQueryPropertyFilter: notion.DatabaseQueryPropertyFilter{
@@ -187,7 +169,10 @@ func TestListPages(t *testing.T) {
 }
 
 func TestGetPage(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
 	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
 
 	pageId := "test-page-id"
@@ -198,8 +183,8 @@ func TestGetPage(t *testing.T) {
 		},
 	}
 
-	mockNotionClient.On("FindPageByID", mock.Anything, pageId).Return(notion.Page{ID: pageId}, nil)
-	mockNotionClient.On("FindBlockChildrenByID", mock.Anything, pageId, &notion.PaginationQuery{}).Return(notion.BlockChildrenResponse{
+	mockNotionClient.EXPECT().FindPageByID(gomock.Any(), pageId).Return(notion.Page{ID: pageId}, nil)
+	mockNotionClient.EXPECT().FindBlockChildrenByID(gomock.Any(), pageId, &notion.PaginationQuery{}).Return(notion.BlockChildrenResponse{
 		Results: []notion.Block{
 			&notion.ParagraphBlock{RichText: []notion.RichText{{PlainText: "Hello"}}},
 		},
@@ -215,13 +200,16 @@ func TestGetPage(t *testing.T) {
 }
 
 func TestTagDatabasePage(t *testing.T) {
-	mockNotionClient := new(MockNotionClient)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockNotionClient := mocks.NewMockNotionClient(ctrl)
 	client := &Client{notionClient: mockNotionClient, context: context.TODO()}
 
 	pageId := "test-page-id"
 	tags := []string{"Tag1", "Tag2"}
 
-	mockNotionClient.On("UpdatePage", mock.Anything, pageId, notion.UpdatePageParams{
+	mockNotionClient.EXPECT().UpdatePage(gomock.Any(), pageId, notion.UpdatePageParams{
 		DatabasePageProperties: notion.DatabasePageProperties{
 			"Tags": notion.DatabasePageProperty{
 				MultiSelect: tagsToNotionProps(tags),
