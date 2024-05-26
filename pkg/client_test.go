@@ -114,12 +114,33 @@ func TestListTagsForDatabaseColumn(t *testing.T) {
 		},
 	}
 
+	mockClient := &MockClient{
+		FindDatabaseByIDFunc: func(ctx context.Context, databaseId string) (notion.Database, error) {
+			return notion.Database{
+				Properties: map[string]notion.DatabaseProperty{
+					"Tags": {
+						Type: notion.DBPropTypeMultiSelect,
+						MultiSelect: &notion.SelectMetadata{
+							Options: []notion.SelectOptions{
+								{Name: "tag1"},
+								{Name: "tag2"},
+							},
+						},
+					},
+				},
+			}, nil
+		},
+		ListTagsForDatabaseColumnFunc: func(dbId, colName string) ([]string, error) {
+			return []string{"tag1", "tag2"}, nil
+		},
+	}
+
 	client := &Client{
 		notionClient: &notion.Client{}, // Use an empty notion.Client for testing
 		context:      context.Background(),
 	}
 
-	tags, err := client.ListTagsForDatabaseColumn("databaseId", "Tags")
+	tags, err := mockClient.ListTagsForDatabaseColumn("databaseId", "Tags")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
