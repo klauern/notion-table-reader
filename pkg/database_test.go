@@ -1,4 +1,4 @@
-package pkg
+package pkg_test
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/dstotijn/go-notion"
-	"github.com/klauern/notion-table-reader/pkg/pkgmocks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -79,7 +78,7 @@ func TestListMultiSelectProps(t *testing.T) {
 				Type: notion.DBPropTypeMultiSelect,
 				Name: columnName,
 				Select: &notion.SelectMetadata{
-					Options: []notion.Option{
+					Options: []notion.SelectOptions{
 						{Name: "Tag1"},
 						{Name: "Tag2"},
 					},
