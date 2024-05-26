@@ -230,9 +230,7 @@ func TestBlockToMarkdown(t *testing.T) {
 	}
 	expected = "Heading 1"
 	result = myNotion.BlockToMarkdown(heading1Block)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 
 	heading2Block := &notion.Heading2Block{
 		RichText: []notion.RichText{
@@ -241,9 +239,7 @@ func TestBlockToMarkdown(t *testing.T) {
 	}
 	expected = "Heading 2"
 	result = myNotion.BlockToMarkdown(heading2Block)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 
 	heading3Block := &notion.Heading3Block{
 		RichText: []notion.RichText{
@@ -252,9 +248,7 @@ func TestBlockToMarkdown(t *testing.T) {
 	}
 	expected = "Heading 3"
 	result = myNotion.BlockToMarkdown(heading3Block)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 
 	bulletedListItemBlock := &notion.BulletedListItemBlock{
 		RichText: []notion.RichText{
@@ -263,9 +257,7 @@ func TestBlockToMarkdown(t *testing.T) {
 	}
 	expected = "Item 1"
 	result = myNotion.BlockToMarkdown(bulletedListItemBlock)
-	if result != expected {
-		t.Errorf("Expected %s, but got %s", expected, result)
-	}
+	Expect(result).To(Equal(expected))
 }
 
 func TestNormalizeBody(t *testing.T) {
