@@ -13,7 +13,6 @@ func TestGenerateSystemPrompt(t *testing.T) {
 	expected := `
 		You are a command-line app that responds with only a list of tags that categorize the content of the messages being sent to you.
 		You can only provide AT MOST 3 tags, and at least 1 TAG.  Less is preferable.  Do not infer tags. The list of tags you output are:
-
 		- tag1
 		- tag2
 		- tag3
